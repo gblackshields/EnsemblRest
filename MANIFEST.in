@@ -1,4 +1,0 @@
-include README.rst
-include LICENSE
-include pyensembl/data/ensembl_genomes_endpoints.json
-include pyensembl/data/ensembl_rest_endpoints.json
