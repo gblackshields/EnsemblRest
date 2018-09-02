@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>EnsemblRest &#8212; EnsemblRest 0.0.4 documentation</title>
+    <title>EnsemblRest &#8212; EnsemblRest 0.1.3 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.0.4',
+        VERSION:     '0.1.3',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -42,24 +42,29 @@
   <div class="section" id="ensemblrest">
 <h1>EnsemblRest<a class="headerlink" href="#ensemblrest" title="Permalink to this headline">¶</a></h1>
 <a class="reference external image-reference" href="https://saythanks.io/to/Ad115"><img alt="https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg" src="https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg" /></a>
-<p>A Python interface to the Ensembl REST APIs, a whole world of biological data
+<p>A Python interface to the Ensembl REST APIs. A whole world of biological data
 at your fingertips.</p>
 <p>The <a class="reference external" href="https://www.ensembl.org/index.html">Ensembl database</a> contains
 reference biological data on almost any organism. Now it is easy to
 access this data programatically through their REST API.</p>
-<p>The specific documentation on the Ensembl REST API is on <a class="reference external" href="https://rest.ensembl.org/">their
+<p>The specific documentation on the Ensembl REST API endpoints is on <a class="reference external" href="https://rest.ensembl.org/">their
 website</a>.</p>
+<p>This library also includes some utilities built on top of the APIs designed to
+ease working with them, including an
+<a class="reference external" href="https://ad115.github.io/EnsemblRest/#ensembl_rest.AssemblyMapper">AssemblyMapper</a>
+class that helps in the conversion between different genome assemblies.</p>
 <p>This project uses code from <a class="reference external" href="https://github.com/rapidstack/RESTEasy">RESTEasy</a>,
 which made my life much easier. Thanks!</p>
 <div class="section" id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
-<p>You can install from PyPI:</p>
+<p>You can install from <a class="reference external" href="https://pypi.org/project/ensembl-rest/">PyPI</a>:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>$ pip install ensembl_rest
 </pre></div>
 </div>
 </div>
+</div>
 <div class="section" id="examples">
-<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<h1>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h1>
 <p>The library exports two main classes: <code class="docutils literal"><span class="pre">ensembl_rest.EnsemblClient</span></code> and
 <code class="docutils literal"><span class="pre">ensembl_rest.EnsemblGenomesClient</span></code> that point respectively to the <a class="reference external" href="http://rest.ensembl.org/">main
 REST API</a> and to the <a class="reference external" href="http://rest.ensemblgenomes.org/">Ensembl Genomes REST
@@ -70,19 +75,20 @@ API</a>.</p>
 </pre></div>
 </div>
 <p>If you want to use a method from the REST API, say:
-<code class="docutils literal"><span class="pre">GET</span> <span class="pre">lookup/symbol/:species/:symbol</span></code>(<a class="reference external" href="http://rest.ensembl.org/documentation/info/symbol_lookup">http://rest.ensembl.org/documentation/info/symbol_lookup</a>)
+<code class="docutils literal"><span class="pre">GET</span> <span class="pre">lookup/symbol/:species/:symbol</span></code>
+(<a class="reference external" href="http://rest.ensembl.org/documentation/info/symbol_lookup">http://rest.ensembl.org/documentation/info/symbol_lookup</a>)
 then the corresponding method on the class is called after the last
 string in the link to the documentation page, in this case, <code class="docutils literal"><span class="pre">symbol_lookup</span></code>.</p>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">help</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">symbol_lookup</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Help</span> <span class="n">on</span> <span class="n">method</span> <span class="n">symbol_lookup</span> <span class="ow">in</span> <span class="n">module</span> <span class="n">pyensembl</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">base</span><span class="p">:</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span>Help on method symbol_lookup in module ensembl_rest.core.baseclient:
 
-<span class="n">symbol_lookup</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="n">method</span> <span class="n">of</span> <span class="n">pyensembl</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">Ensembl</span> <span class="n">instance</span>
-    <span class="n">GET</span> <span class="n">lookup</span><span class="o">/</span><span class="n">symbol</span><span class="o">/</span><span class="p">:</span><span class="n">species</span><span class="o">/</span><span class="p">:</span><span class="n">symbol</span>
+symbol_lookup(*args, **kwargs) method of ensembl_rest.core.baseclient.EnsemblClient instance
+    ``GET lookup/symbol/:species/:symbol``
 
-    <span class="n">Find</span> <span class="n">the</span> <span class="n">species</span> <span class="ow">and</span> <span class="n">database</span> <span class="k">for</span> <span class="n">a</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="n">a</span> <span class="n">linked</span> <span class="n">external</span> <span class="n">database</span>
-    <span class="n">More</span> <span class="n">info</span><span class="p">:</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">rest</span><span class="o">.</span><span class="n">ensembl</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">documentation</span><span class="o">/</span><span class="n">info</span><span class="o">/</span><span class="n">symbol_lookup</span>
+    Find the species and database for a symbol in a linked external database
+    - More info: https://rest.ensembl.org/documentation/info/symbol_lookup
 </pre></div>
 </div>
 <p>We can see from the resource string
@@ -130,6 +136,17 @@ following way:</p>
 <span class="go">                        asm_one=&#39;GRCh37&#39;,</span>
 <span class="go">                        region=&#39;X:1000000..1000100:1&#39;,</span>
 <span class="go">                        asm_two=&#39;GRCh38&#39;)</span>
+
+
+<span class="go"># Or...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">region_str</span> <span class="o">=</span> <span class="n">ensembl_rest</span><span class="o">.</span><span class="n">region_str</span><span class="p">(</span><span class="n">chom</span><span class="o">=</span><span class="s1">&#39;X&#39;</span><span class="p">,</span>
+<span class="go">                                         start=1000000,</span>
+<span class="go">                                         end=1000100)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">client</span><span class="o">.</span><span class="n">assembly_map</span><span class="p">(</span><span class="n">species</span><span class="o">=</span><span class="s1">&#39;human&#39;</span><span class="p">,</span>
+<span class="go">                        asm_one=&#39;GRCh37&#39;,</span>
+<span class="go">                        region=region_str,</span>
+<span class="go">                        asm_two=&#39;GRCh38&#39;)</span>
 </pre></div>
 </div>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;mappings&#39;</span><span class="p">:</span> <span class="p">[{</span><span class="s1">&#39;original&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;seq_region_name&#39;</span><span class="p">:</span> <span class="s1">&#39;X&#39;</span><span class="p">,</span>
@@ -146,9 +163,23 @@ following way:</p>
     <span class="s1">&#39;assembly&#39;</span><span class="p">:</span> <span class="s1">&#39;GRCh38&#39;</span><span class="p">}}]}</span>
 </pre></div>
 </div>
+<p>The above problem (mapping from one assembly to another) is so frequent that
+the library provides a specialized class <code class="docutils literal"><span class="pre">AssemblyMapper</span></code> to efficiently
+mapping large amounts of regions between assemblies. This class avoids the
+time-consuming task of making a web request every time a mapping is needed by
+fetching the mapping of the whole assembly right from the instantiation. This
+is a time-consuming operation by itself, but it pays off when one has to
+transform repeatedly betweeen assemblies.:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mapper</span> <span class="o">=</span> <span class="n">ensembl_rest</span><span class="o">.</span><span class="n">AssemblyMapper</span><span class="p">(</span><span class="n">from_assembly</span><span class="o">=</span><span class="s1">&#39;GRCh37&#39;</span>
+<span class="gp">... </span>                                     <span class="n">to_assembly</span><span class="o">=</span><span class="s1">&#39;GRCh38&#39;</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mapper</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">chrom</span><span class="o">=</span><span class="s1">&#39;1&#39;</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="mi">1000000</span><span class="p">)</span>
+<span class="go">1064620</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="meta">
-<h2>Meta<a class="headerlink" href="#meta" title="Permalink to this headline">¶</a></h2>
+<h1>Meta<a class="headerlink" href="#meta" title="Permalink to this headline">¶</a></h1>
 <p><strong>Author</strong>: <a class="reference external" href="https://agargar.wordpress.com/">Ad115</a> -
 <a class="reference external" href="https://github.com/Ad115/">Github</a> – <a class="reference external" href="mailto:a&#46;garcia230395&#37;&#52;&#48;gmail&#46;com">a<span>&#46;</span>garcia230395<span>&#64;</span>gmail<span>&#46;</span>com</a></p>
 <p>Distributed under the MIT license. See
@@ -156,7 +187,7 @@ following way:</p>
 for more information.</p>
 </div>
 <div class="section" id="contributing">
-<h2>Contributing<a class="headerlink" href="#contributing" title="Permalink to this headline">¶</a></h2>
+<h1>Contributing<a class="headerlink" href="#contributing" title="Permalink to this headline">¶</a></h1>
 <ol class="arabic simple">
 <li>Check for open issues or open a fresh issue to start a discussion
 around a feature idea or a bug.</li>
@@ -169,9 +200,40 @@ works as expected.</li>
 published.</li>
 </ol>
 </div>
-</div>
+<hr class="docutils" />
 <div class="section" id="api-documentation">
 <h1>API Documentation<a class="headerlink" href="#api-documentation" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="ensembl_rest.region_str">
+<code class="descclassname">ensembl_rest.</code><code class="descname">region_str</code><span class="sig-paren">(</span><em>chrom</em>, <em>start</em>, <em>end=None</em>, <em>strand=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ensembl_rest/utils.html#region_str"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ensembl_rest.region_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>Assemble a region string suitable for consumption for the Ensembl REST API.</p>
+<p>The generated string has the format: <code class="docutils literal"><span class="pre">{chrom}:{start}..{end}:{strand}</span></code></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="ensembl_rest.AssemblyMapper">
+<em class="property">class </em><code class="descclassname">ensembl_rest.</code><code class="descname">AssemblyMapper</code><span class="sig-paren">(</span><em>from_assembly='GRCh37'</em>, <em>to_assembly='GRCh38'</em>, <em>species='human'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ensembl_rest/assemblymapper.html#AssemblyMapper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ensembl_rest.AssemblyMapper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Structure that optimizes the mapping between 
+diferent genome assemblies.</p>
+<p>Example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mapper</span> <span class="o">=</span> <span class="n">AssemblyMapper</span><span class="p">(</span><span class="n">from_assembly</span><span class="o">=</span><span class="s1">&#39;GRCh37&#39;</span>
+<span class="gp">... </span>                        <span class="n">to_assembly</span><span class="o">=</span><span class="s1">&#39;GRCh38&#39;</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mapper</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">chrom</span><span class="o">=</span><span class="s1">&#39;1&#39;</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="mi">1000000</span><span class="p">)</span>
+<span class="go">1064620</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="ensembl_rest.AssemblyMapper.map">
+<code class="descname">map</code><span class="sig-paren">(</span><em>chrom</em>, <em>pos</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ensembl_rest/assemblymapper.html#AssemblyMapper.map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ensembl_rest.AssemblyMapper.map" title="Permalink to this definition">¶</a></dt>
+<dd><p>Map the given position.</p>
+<p>The mapping is between the specified assemblies
+when creating the object. (default: map position 
+from assembly GRCh37 to assembly GRCh38)</p>
+</dd></dl>
+
+</dd></dl>
+
 <dl class="class">
 <dt id="ensembl_rest.EnsemblClient">
 <em class="property">class </em><code class="descclassname">ensembl_rest.</code><code class="descname">EnsemblClient</code><span class="sig-paren">(</span><em>base_url=None</em><span class="sig-paren">)</span><a class="headerlink" href="#ensembl_rest.EnsemblClient" title="Permalink to this definition">¶</a></dt>

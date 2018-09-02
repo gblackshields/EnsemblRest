@@ -1,0 +1,264 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>ensembl_rest.assemblymapper &#8212; EnsemblRest 0.1.3 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for ensembl_rest.assemblymapper</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">intervaltree</span> <span class="k">import</span> <span class="n">IntervalTree</span>
+
+<span class="kn">from</span> <span class="nn">.ensemblclients</span> <span class="k">import</span> <span class="n">EnsemblClient</span>
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="k">import</span> <span class="n">region_str</span>
+
+
+<div class="viewcode-block" id="AssemblyMapper"><a class="viewcode-back" href="../../index.html#ensembl_rest.AssemblyMapper">[docs]</a><span class="k">class</span> <span class="nc">AssemblyMapper</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Structure that optimizes the mapping between </span>
+<span class="sd">    diferent genome assemblies.</span>
+<span class="sd">    </span>
+<span class="sd">    Example::</span>
+<span class="sd">    </span>
+<span class="sd">        &gt;&gt;&gt; mapper = AssemblyMapper(from_assembly=&#39;GRCh37&#39;</span>
+<span class="sd">        ...                         to_assembly=&#39;GRCh38&#39;)</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; mapper.map(chrom=&#39;1&#39;, pos=1000000)</span>
+<span class="sd">        1064620</span>
+<span class="sd">        </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># No need to request several times the same info</span>
+    <span class="n">map_cache</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">from_assembly</span><span class="o">=</span><span class="s1">&#39;GRCh37&#39;</span><span class="p">,</span> 
+                       <span class="n">to_assembly</span><span class="o">=</span><span class="s1">&#39;GRCh38&#39;</span><span class="p">,</span> 
+                       <span class="n">species</span><span class="o">=</span><span class="s1">&#39;human&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        </span>
+<span class="sd">        from_assembly: str, optional</span>
+<span class="sd">                Version of the input assembly. Default &#39;GRCh37&#39;.</span>
+<span class="sd">                </span>
+<span class="sd">        to_assembly: str, optional</span>
+<span class="sd">                Version of the output assembly. Default &#39;GRCh38&#39;.</span>
+<span class="sd">                </span>
+<span class="sd">        species: str, optional</span>
+<span class="sd">                Species name/alias. Default &#39;human&#39;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># The interface to the Ensembl REST API</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span> <span class="o">=</span> <span class="n">EnsemblClient</span><span class="p">()</span>
+        
+        <span class="c1"># The assembly mapping is formed by mappings </span>
+        <span class="c1"># of genome slices. We keep at minimum the </span>
+        <span class="c1"># number of requests we make by fetching the </span>
+        <span class="c1"># whole mapping information at once and storing </span>
+        <span class="c1"># it in an interval tree data structure for </span>
+        <span class="c1"># efficient lookup.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assembly_map</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fetch_mapping</span><span class="p">(</span><span class="n">from_assembly</span><span class="p">,</span> 
+                                                <span class="n">to_assembly</span><span class="p">,</span>
+                                                <span class="n">species</span><span class="p">)</span>
+    <span class="c1"># ---</span>
+    
+    <span class="k">def</span> <span class="nf">_fetch_mapping</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">from_assembly</span><span class="p">,</span> <span class="n">to_assembly</span><span class="p">,</span> <span class="n">species</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Fetch the mapping, either make it anew or use a cached one.&quot;&quot;&quot;</span>
+        <span class="n">map_key</span> <span class="o">=</span> <span class="n">from_assembly</span> <span class="o">+</span> <span class="n">to_assembly</span> <span class="o">+</span> <span class="n">species</span>
+        
+        <span class="k">if</span> <span class="n">map_key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_cache</span><span class="p">:</span>
+            <span class="c1"># Mapping information already fetched, return it</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_cache</span><span class="p">[</span><span class="n">map_key</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Need to assemble the mapping information</span>
+            <span class="n">mapping</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_assemble_mapping</span><span class="p">(</span><span class="n">from_assembly</span><span class="p">,</span> 
+                                             <span class="n">to_assembly</span><span class="p">,</span>
+                                             <span class="n">species</span><span class="p">)</span>
+            <span class="c1"># Cache the assembled mapping</span>
+            <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">map_cache</span><span class="p">[</span><span class="n">map_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">mapping</span>
+            
+            <span class="k">return</span> <span class="n">mapping</span>
+    <span class="c1"># ---</span>
+    
+    <span class="k">def</span> <span class="nf">_assemble_mapping</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">from_assembly</span><span class="p">,</span> <span class="n">to_assembly</span><span class="p">,</span> <span class="n">species</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Assemble the interval tree with the information </span>
+<span class="sd">        for the given mapping.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span>
+
+        <span class="c1"># Get the chromosome sizes</span>
+        <span class="n">genome_info</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">assembly_info</span><span class="p">(</span><span class="n">species</span><span class="o">=</span><span class="n">species</span><span class="p">)</span>
+        <span class="n">chromosomes</span> <span class="o">=</span> <span class="p">{</span><span class="n">item</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]:</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;length&#39;</span><span class="p">]</span> 
+                            <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">genome_info</span><span class="p">[</span><span class="s1">&#39;top_level_region&#39;</span><span class="p">]</span>
+                            <span class="k">if</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;coord_system&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;chromosome&#39;</span><span class="p">}</span> 
+
+        <span class="c1"># Initialize the mapping structure</span>
+        <span class="c1"># (An interval tree for each chromosome)</span>
+        <span class="n">assembly_map</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">chrom</span><span class="p">,</span> <span class="n">chrom_len</span> <span class="ow">in</span> <span class="n">chromosomes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="c1"># Query the mapping information</span>
+            <span class="c1"># for the entire chromosome</span>
+            <span class="n">region</span> <span class="o">=</span> <span class="n">region_str</span><span class="p">(</span><span class="n">chrom</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">chrom_len</span><span class="p">)</span>
+            <span class="n">map_</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">assembly_map</span><span class="p">(</span><span class="n">species</span><span class="o">=</span><span class="n">species</span><span class="p">,</span>
+                                       <span class="n">region</span><span class="o">=</span><span class="n">region</span><span class="p">,</span>
+                                       <span class="n">asm_one</span><span class="o">=</span><span class="n">from_assembly</span><span class="p">,</span> 
+                                       <span class="n">asm_two</span><span class="o">=</span><span class="n">to_assembly</span><span class="p">)</span>
+
+            <span class="c1"># Assemble into the mapping structure</span>
+            <span class="n">assembly_map</span><span class="p">[</span><span class="n">chrom</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_interval_tree</span><span class="p">(</span><span class="n">map_</span><span class="p">[</span><span class="s1">&#39;mappings&#39;</span><span class="p">],</span> 
+                                                      <span class="n">chrom_len</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">assembly_map</span>
+    <span class="c1"># ---</span>
+            
+    <span class="k">def</span> <span class="nf">_interval_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mappings</span><span class="p">,</span> <span class="n">chrom_length</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Assemble an interval tree from the mapping information.</span>
+<span class="sd">        </span>
+<span class="sd">        An interval tree is a tree data structure that allows to </span>
+<span class="sd">        efficiently find all intervals that overlap with any given </span>
+<span class="sd">        interval or point, often used for windowing queries.</span>
+<span class="sd">            (see https://en.wikipedia.org/wiki/Interval_tree)</span>
+<span class="sd">        </span>
+<span class="sd">        The mapping information is a collection where </span>
+<span class="sd">        each item has the shape::</span>
+<span class="sd">            {&#39;mapped&#39;: </span>
+<span class="sd">               {&#39;assembly&#39;: &#39;GRCh38&#39;,</span>
+<span class="sd">                &#39;coord_system&#39;: &#39;chromosome&#39;,</span>
+<span class="sd">                &#39;end&#39;: 1039365,</span>
+<span class="sd">                &#39;seq_region_name&#39;: &#39;X&#39;,</span>
+<span class="sd">                &#39;start&#39;: 1039265,</span>
+<span class="sd">                &#39;strand&#39;: 1},</span>
+<span class="sd">             &#39;original&#39;: </span>
+<span class="sd">               {&#39;assembly&#39;: &#39;GRCh37&#39;,</span>
+<span class="sd">                &#39;coord_system&#39;: &#39;chromosome&#39;,</span>
+<span class="sd">                &#39;end&#39;: 1000100,</span>
+<span class="sd">                &#39;seq_region_name&#39;: &#39;X&#39;,</span>
+<span class="sd">                &#39;start&#39;: 1000000,</span>
+<span class="sd">                &#39;strand&#39;: 1}}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">interval_tree</span> <span class="o">=</span> <span class="n">IntervalTree</span><span class="p">()</span>
+        
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">mappings</span><span class="p">:</span>
+            <span class="c1"># Assemble the interval tree.</span>
+            <span class="c1"># Each item describes a mapping of </span>
+            <span class="c1"># regions btw both assemblies.</span>
+            <span class="n">from_</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;original&#39;</span><span class="p">]</span>
+            <span class="n">to</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;mapped&#39;</span><span class="p">]</span>
+
+            <span class="c1"># Need to modify to represent a half open</span>
+            <span class="c1"># interval (as [a,b) instead of [a,b])</span>
+            <span class="n">from_region</span> <span class="o">=</span> <span class="n">from_</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">],</span><span class="n">from_</span><span class="p">[</span><span class="s1">&#39;end&#39;</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span>
+
+            <span class="k">if</span> <span class="n">to</span><span class="p">[</span><span class="s1">&#39;strand&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="o">+</span><span class="mi">1</span><span class="p">:</span>
+                <span class="n">to_region</span> <span class="o">=</span> <span class="n">to</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">],</span><span class="n">to</span><span class="p">[</span><span class="s1">&#39;end&#39;</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Handle mappings to the reverse strand</span>
+                <span class="c1"># (Translate them to the forward strand)</span>
+                <span class="c1"># Visual aid to the transformation:</span>
+                <span class="c1">#  1  2  3  4  5  6  7  8  9 10</span>
+                <span class="c1">#  |  |  |  |  |  |  |  |  |  |</span>
+                <span class="c1"># 10 9  8  7  6  5  4  3  2  1</span>
+                <span class="n">to_region</span> <span class="o">=</span> <span class="p">(</span><span class="n">chrom_length</span> <span class="o">-</span> <span class="n">to</span><span class="p">[</span><span class="s1">&#39;end&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> 
+                             <span class="n">chrom_length</span> <span class="o">-</span> <span class="n">to</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            
+            <span class="n">interval_tree</span><span class="o">.</span><span class="n">addi</span><span class="p">(</span><span class="o">*</span><span class="n">from_region</span><span class="p">,</span> 
+                               <span class="n">data</span><span class="o">=</span><span class="n">to_region</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">interval_tree</span>
+    <span class="c1"># ---</span>
+    
+<div class="viewcode-block" id="AssemblyMapper.map"><a class="viewcode-back" href="../../index.html#ensembl_rest.AssemblyMapper.map">[docs]</a>    <span class="k">def</span> <span class="nf">map</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chrom</span><span class="p">,</span> <span class="n">pos</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Map the given position.</span>
+<span class="sd">        </span>
+<span class="sd">        The mapping is between the specified assemblies</span>
+<span class="sd">        when creating the object. (default: map position </span>
+<span class="sd">        from assembly GRCh37 to assembly GRCh38)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Query the interval it maps to</span>
+        <span class="n">chromosome_mapper</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assembly_map</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">chrom</span><span class="p">)]</span>
+        <span class="n">interval</span> <span class="o">=</span> <span class="n">chromosome_mapper</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">interval</span><span class="p">:</span>
+            <span class="c1"># Calculate position from the interval</span>
+            <span class="n">interval</span> <span class="o">=</span> <span class="n">interval</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+            <span class="n">mapped_pos</span> <span class="o">=</span> <span class="n">interval</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">pos</span> <span class="o">-</span> <span class="n">interval</span><span class="o">.</span><span class="n">begin</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># No mapping found.</span>
+            <span class="n">mapped_pos</span> <span class="o">=</span> <span class="kc">None</span>
+        
+        <span class="k">return</span> <span class="n">mapped_pos</span></div></div>
+    <span class="c1"># ---</span>
+<span class="c1"># AssemblyMapper</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Andrés García (Ad115).
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
