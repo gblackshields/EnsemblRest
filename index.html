@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>EnsemblRest &#8212; EnsemblRest 0.1.3 documentation</title>
+    <title>Ensembl-REST &#8212; Ensembl-REST 0.1.6 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.1.3',
+        VERSION:     '0.1.6',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -39,20 +39,19 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="ensemblrest">
-<h1>EnsemblRest<a class="headerlink" href="#ensemblrest" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="ensembl-rest">
+<h1>Ensembl-REST<a class="headerlink" href="#ensembl-rest" title="Permalink to this headline">¶</a></h1>
 <a class="reference external image-reference" href="https://saythanks.io/to/Ad115"><img alt="https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg" src="https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg" /></a>
 <p>A Python interface to the Ensembl REST APIs. A whole world of biological data
 at your fingertips.</p>
 <p>The <a class="reference external" href="https://www.ensembl.org/index.html">Ensembl database</a> contains
 reference biological data on almost any organism. Now it is easy to
 access this data programatically through their REST API.</p>
-<p>The specific documentation on the Ensembl REST API endpoints is on <a class="reference external" href="https://rest.ensembl.org/">their
-website</a>.</p>
+<p>The full list of endpoints for the Ensembl REST API endpoints along with
+endpoint-specific documentation can be found on <a class="reference external" href="https://rest.ensembl.org/">their website</a>.</p>
 <p>This library also includes some utilities built on top of the APIs designed to
-ease working with them, including an
-<a class="reference external" href="https://ad115.github.io/EnsemblRest/#ensembl_rest.AssemblyMapper">AssemblyMapper</a>
-class that helps in the conversion between different genome assemblies.</p>
+ease working with them, including an <a class="reference external" href="https://ad115.github.io/EnsemblRest/#ensembl_rest.AssemblyMapper">AssemblyMapper</a> class
+that helps in the conversion between different genome assemblies.</p>
 <p>This project uses code from <a class="reference external" href="https://github.com/rapidstack/RESTEasy">RESTEasy</a>,
 which made my life much easier. Thanks!</p>
 <div class="section" id="installation">
@@ -76,9 +75,9 @@ API</a>.</p>
 </div>
 <p>If you want to use a method from the REST API, say:
 <code class="docutils literal"><span class="pre">GET</span> <span class="pre">lookup/symbol/:species/:symbol</span></code>
-(<a class="reference external" href="http://rest.ensembl.org/documentation/info/symbol_lookup">http://rest.ensembl.org/documentation/info/symbol_lookup</a>)
-then the corresponding method on the class is called after the last
-string in the link to the documentation page, in this case, <code class="docutils literal"><span class="pre">symbol_lookup</span></code>.</p>
+(<a class="reference external" href="http://rest.ensembl.org/documentation/info/symbol_lookup">http://rest.ensembl.org/documentation/info/symbol_lookup</a>) then the
+corresponding method on the class is called after the last string in the link
+to the documentation page, in this case, <code class="docutils literal"><span class="pre">symbol_lookup</span></code>.</p>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">help</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">symbol_lookup</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -91,10 +90,9 @@ symbol_lookup(*args, **kwargs) method of ensembl_rest.core.baseclient.EnsemblCli
     - More info: https://rest.ensembl.org/documentation/info/symbol_lookup
 </pre></div>
 </div>
-<p>We can see from the resource string
-<code class="docutils literal"><span class="pre">GET</span> <span class="pre">lookup/symbol/:species/:symbol</span></code> that this method contains 2
-parameters called species and symbol, so we can call the method in the
-following way:</p>
+<p>We can see from the resource string <code class="docutils literal"><span class="pre">GET</span> <span class="pre">lookup/symbol/:species/:symbol</span></code> that
+this method contains 2 parameters called species and symbol, so we can call the
+method in the following way:</p>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">client</span><span class="o">.</span><span class="n">symbol_lookup</span><span class="p">(</span><span class="n">species</span><span class="o">=</span><span class="s1">&#39;homo sapiens&#39;</span><span class="p">,</span>
 <span class="go">                         symbol=&#39;TP53&#39;)</span>
 
@@ -103,20 +101,77 @@ following way:</p>
 </pre></div>
 </div>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;source&#39;</span><span class="p">:</span> <span class="s1">&#39;ensembl_havana&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;object_type&#39;</span><span class="p">:</span> <span class="s1">&#39;Gene&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;logic_name&#39;</span><span class="p">:</span> <span class="s1">&#39;ensembl_havana_gene&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;version&#39;</span><span class="p">:</span> <span class="mi">14</span><span class="p">,</span>
+  <span class="s1">&#39;species&#39;</span><span class="p">:</span> <span class="s1">&#39;human&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;BRCA2, DNA repair associated [Source:HGNC Symbol;Acc:HGNC:1101]&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;display_name&#39;</span><span class="p">:</span> <span class="s1">&#39;BRCA2&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;assembly_name&#39;</span><span class="p">:</span> <span class="s1">&#39;GRCh38&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;biotype&#39;</span><span class="p">:</span> <span class="s1">&#39;protein_coding&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;end&#39;</span><span class="p">:</span> <span class="mi">32400266</span><span class="p">,</span>
+  <span class="s1">&#39;seq_region_name&#39;</span><span class="p">:</span> <span class="s1">&#39;13&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;db_type&#39;</span><span class="p">:</span> <span class="s1">&#39;core&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;strand&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+  <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="s1">&#39;ENSG00000139618&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;start&#39;</span><span class="p">:</span> <span class="mi">32315474</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>One can pass request parameters to modify the response with the <code class="docutils literal"><span class="pre">params</span></code>
+keyword (the specific parameters to pass depend on the specific endpoint,
+the official endpoints documentation can be found <a class="reference external" href="http://rest.ensemblgenomes.org/">here</a>, the parameters to be passed this way are
+the optional ones for each endpoint):</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">client</span><span class="o">.</span><span class="n">symbol_lookup</span><span class="p">(</span><span class="s1">&#39;human&#39;</span><span class="p">,</span> <span class="s1">&#39;BRCA2&#39;</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;expand&#39;</span><span class="p">:</span><span class="bp">True</span><span class="p">})</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;source&#39;</span><span class="p">:</span> <span class="s1">&#39;ensembl_havana&#39;</span><span class="p">,</span>
  <span class="s1">&#39;object_type&#39;</span><span class="p">:</span> <span class="s1">&#39;Gene&#39;</span><span class="p">,</span>
  <span class="s1">&#39;logic_name&#39;</span><span class="p">:</span> <span class="s1">&#39;ensembl_havana_gene&#39;</span><span class="p">,</span>
- <span class="s1">&#39;version&#39;</span><span class="p">:</span> <span class="mi">16</span><span class="p">,</span>
- <span class="s1">&#39;species&#39;</span><span class="p">:</span> <span class="s1">&#39;homo sapiens&#39;</span><span class="p">,</span>
- <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;tumor protein p53 [Source:HGNC Symbol;Acc:HGNC:11998]&#39;</span><span class="p">,</span>
- <span class="s1">&#39;display_name&#39;</span><span class="p">:</span> <span class="s1">&#39;TP53&#39;</span><span class="p">,</span>
- <span class="s1">&#39;assembly_name&#39;</span><span class="p">:</span> <span class="s1">&#39;GRCh38&#39;</span><span class="p">,</span>
- <span class="s1">&#39;biotype&#39;</span><span class="p">:</span> <span class="s1">&#39;protein_coding&#39;</span><span class="p">,</span>
- <span class="s1">&#39;end&#39;</span><span class="p">:</span> <span class="mi">7687550</span><span class="p">,</span>
- <span class="s1">&#39;seq_region_name&#39;</span><span class="p">:</span> <span class="s1">&#39;17&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;seq_region_name&#39;</span><span class="p">:</span> <span class="s1">&#39;13&#39;</span><span class="p">,</span>
  <span class="s1">&#39;db_type&#39;</span><span class="p">:</span> <span class="s1">&#39;core&#39;</span><span class="p">,</span>
- <span class="s1">&#39;strand&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
- <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="s1">&#39;ENSG00000141510&#39;</span><span class="p">,</span>
- <span class="s1">&#39;start&#39;</span><span class="p">:</span> <span class="mi">7661779</span><span class="p">}</span>
+ <span class="s1">&#39;strand&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+ <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="s1">&#39;ENSG00000139618&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;Transcript&#39;</span><span class="p">:</span> <span class="p">[{</span><span class="s1">&#39;source&#39;</span><span class="p">:</span> <span class="s1">&#39;ensembl_havana&#39;</span><span class="p">,</span>
+   <span class="s1">&#39;object_type&#39;</span><span class="p">:</span> <span class="s1">&#39;Transcript&#39;</span><span class="p">,</span>
+   <span class="s1">&#39;logic_name&#39;</span><span class="p">:</span> <span class="s1">&#39;ensembl_havana_transcript&#39;</span><span class="p">,</span>
+   <span class="s1">&#39;Exon&#39;</span><span class="p">:</span> <span class="p">[{</span><span class="s1">&#39;object_type&#39;</span><span class="p">:</span> <span class="s1">&#39;Exon&#39;</span><span class="p">,</span>
+     <span class="s1">&#39;version&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+     <span class="s1">&#39;species&#39;</span><span class="p">:</span> <span class="s1">&#39;human&#39;</span><span class="p">,</span>
+     <span class="s1">&#39;assembly_name&#39;</span><span class="p">:</span> <span class="s1">&#39;GRCh38&#39;</span><span class="p">,</span>
+     <span class="o">...</span>
+     <span class="o">...</span>
+     <span class="o">...</span>
+ <span class="s1">&#39;biotype&#39;</span><span class="p">:</span> <span class="s1">&#39;protein_coding&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;start&#39;</span><span class="p">:</span> <span class="mi">32315474</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>In that way, you can pass the parameters for the POST endpoints, such as:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">client</span><span class="o">.</span><span class="n">symbol_post</span><span class="p">(</span><span class="n">species</span><span class="o">=</span><span class="s1">&#39;human&#39;</span><span class="p">,</span>
+<span class="go">                       params={&#39;symbols&#39;: [&quot;BRCA2&quot;,</span>
+<span class="go">                                           &quot;TP53&quot;,</span>
+<span class="go">                                           &quot;BRAF&quot; ]})</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;BRCA2&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="s2">&quot;ensembl_havana&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;object_type&quot;</span><span class="p">:</span> <span class="s2">&quot;Gene&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;logic_name&quot;</span><span class="p">:</span> <span class="s2">&quot;ensembl_havana_gene&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="mi">14</span><span class="p">,</span>
+        <span class="s2">&quot;species&quot;</span><span class="p">:</span> <span class="s2">&quot;homo_sapiens&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;BRCA2, DNA repair associated [Source:HGNC Symbol;Acc:HGNC:1101]&quot;</span><span class="p">,</span>
+        <span class="o">...</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;TP53&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="o">...</span>
+    <span class="p">}</span><span class="o">.</span>
+    <span class="s2">&quot;BRAF&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="o">...</span>
+        <span class="s2">&quot;strand&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;ENSG00000157764&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;start&quot;</span><span class="p">:</span> <span class="mi">140719327</span>
+    <span class="p">}</span>
+<span class="p">}</span>
 </pre></div>
 </div>
 <p>Another common usage is to fetch sequences of known genes:</p>
@@ -182,8 +237,10 @@ transform repeatedly betweeen assemblies.:</p>
 <h1>Meta<a class="headerlink" href="#meta" title="Permalink to this headline">¶</a></h1>
 <p><strong>Author</strong>: <a class="reference external" href="https://agargar.wordpress.com/">Ad115</a> -
 <a class="reference external" href="https://github.com/Ad115/">Github</a> – <a class="reference external" href="mailto:a&#46;garcia230395&#37;&#52;&#48;gmail&#46;com">a<span>&#46;</span>garcia230395<span>&#64;</span>gmail<span>&#46;</span>com</a></p>
+<p><strong>Project pages</strong>:
+<a class="reference external" href="https://ad115.github.io/EnsemblRest/">Docs</a> - <a class="reference external" href="https://github.com/Ad115/EnsemblRest/">&#64;GitHub</a> - <a class="reference external" href="https://pypi.org/project/ensembl-rest/">&#64;PyPI</a></p>
 <p>Distributed under the MIT license. See
-<a class="reference external" href="https://github.com/Ad115/PyEnsembl/blob/master/LICENSE">LICENSE</a>
+<a class="reference external" href="https://github.com/Ad115/EnsemblRest/blob/master/LICENSE">LICENSE</a>
 for more information.</p>
 </div>
 <div class="section" id="contributing">
@@ -1725,7 +1782,36 @@ from assembly GRCh37 to assembly GRCh38)</p>
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper"><div class="relations">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="#">Ensembl-REST</a></h1>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=Ad115&repo=EnsemblRest&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Ensembl-REST</a><ul>
+<li><a class="reference internal" href="#installation">Installation</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#examples">Examples</a></li>
+<li><a class="reference internal" href="#meta">Meta</a></li>
+<li><a class="reference internal" href="#contributing">Contributing</a></li>
+<li><a class="reference internal" href="#api-documentation">API Documentation</a></li>
+</ul>
+<div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="#">Documentation overview</a><ul>
