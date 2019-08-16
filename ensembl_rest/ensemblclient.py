@@ -17,7 +17,7 @@ with open_text('ensembl_rest.data','ensembl_rest_endpoints.json') as f:
 
 
 # Now create the main classes 
-ensembl_rest_url = 'https://rest.ensembl.org'
+ensembl_rest_url = 'https://grch37.rest.ensembl.org'
 
 EnsemblClient = build_client_class(
                 'EnsemblClient', 
